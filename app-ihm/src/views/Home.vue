@@ -1,7 +1,16 @@
 <template>
-  <div class="home">
+        <v-row
+          align="center"
+          justify="space-around"
+        >
+      <v-col
+            cols="12"
+            sm="8"
+            md="4"
+          >
     <Upload />
-  </div>
+      </v-col>
+        </v-row>
 </template>
 
 <script>
