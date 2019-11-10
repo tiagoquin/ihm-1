@@ -1,8 +1,8 @@
 <template>
   <!--  -->
   <v-row align="start" justify="center">
-    <v-col cols="12" md="8">
-      <v-card class="pa-2" outlined tile>
+    <v-col >
+        <h2>Step 1: Crop your picture</h2>
         <vue-cropper ref="cropper" :src="imgSrc" alt="Source Image" :containerStyle="style"></vue-cropper>
         <!--
         <v-img
@@ -14,20 +14,72 @@
           id="croppr"
         />
         -->
-      </v-card>
     </v-col>
+        <v-col >
+          <form>
+            <h2>Step 2: Get your data</h2>
+            <p>
+      <v-btn
+        color="pink"
+        class="mr-4"
+        @click="getData()"
+      >
+      Obtain
+      </v-btn>
+            </p>
+
+          <v-text-field
+            label="Coordinate X"
+            outlined
+            :value=current.top
+          ></v-text-field>
+          <v-text-field
+            label="Coordinate Y"
+            :value=current.left
+            outlined
+          ></v-text-field>
+          <v-text-field
+            label="Width (Size X)"
+            :value=current.width
+            outlined
+          ></v-text-field>
+          <v-text-field
+            label="Height (Size Y)"
+            :value=current.height
+            outlined
+          ></v-text-field>
+          <v-text-field
+            label="Label"
+            v-model=labelvalue
+            outlined
+          ></v-text-field>
+          </form>
+
+      <h2>Step 3: Add it to the list</h2>
+        <p>
+      <v-btn
+        color="pink"
+        class="mr-4"
+        @click="pushData()"
+      >
+      Push
+      </v-btn>
+            </p>
+        </v-col>
     <!-- List -->
-    <v-col cols="6" md="4">
+    <v-col >
       <a @click.prevent="getData">getData</a>
 
       <v-list>
         <v-list-item-group v-model="model">
           <v-list-item v-for="elem in coordonnees" :key="elem.id">
             <v-list-item-icon>
-              <v-icon v-text="icon" />
+              <v-icon large v-text="icon" @click="deleteElem(elem.id)" color="red darken-2" />
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title v-text="elem.obj.top" />
+              <v-list-item-title v-text="elem.obj.text3" />
+              <v-list-item-title v-text="elem.obj.text1" />
+              <v-list-item-title v-text="elem.obj.text2" />
             </v-list-item-content>
           </v-list-item>
         </v-list-item-group>
@@ -46,10 +98,17 @@ export default {
   data() {
     return {
       model: 1,
-      icon: "mdi-wifi",
+      icon: "mdi-delete-forever",
       coordonnees: [],
       imgSrc: "",
       data: null,
+      current: {
+        top: 0,
+        left: 0,
+        height:0,
+        width: 0,
+      },
+      labelvalue: '',
       lastId: 0,
       style: {
         "max-width": "500px",
@@ -68,7 +127,18 @@ export default {
   methods: {
     getData() {
       this.data = this.$refs.cropper.getCropBoxData();
-      this.coordonnees.push({ id: this.lastId++, obj: this.data });
+      this.current= this.data;
+      // console.log(this.data);
+    },
+    pushData(){
+      const text1 = `x: ${this.current.top}, y: ${this.current.left}`;
+      const text2 = `width: ${this.current.width}, height: ${this.current.height}`;
+      const text3 = `${this.labelvalue}`;
+      this.coordonnees.push({ id: this.lastId++, obj: { text3, text1, text2} });
+    },
+    deleteElem(id){
+      console.log('delete', id);
+      this.coordonnees = this.coordonnees.filter(obj => obj.id !== id);
     }
   }
 };
