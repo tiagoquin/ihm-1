@@ -1,1 +1,4 @@
-# ihm-1
+# Report IHM lab-1
+
+> Burgener François, Póvoa Tiago
+

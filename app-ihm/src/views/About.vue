@@ -237,12 +237,12 @@ export default {
       }
 
       this.coordonnees.push({
+        label: this.labelvalue,
         id: this.labelid,
         top: this.current.top,
         left: this.current.left,
         width: this.current.width,
         height: this.current.height,
-        label: this.labelvalue
       });
       this.resetVals();
     },
