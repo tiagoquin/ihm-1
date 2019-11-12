@@ -8,8 +8,10 @@
     <router-view/>
       </v-container>
                  <div id="nav">
+                   <!--
       <router-link to="/">Home</router-link> |
       <router-link :to="{ name: 'about', params: {somevalue: 'chien' } }">About</router-link>
+      -->
     </div>
     </v-content>
   </v-app>

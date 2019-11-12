@@ -22,6 +22,30 @@
           id="croppr"
         />
         -->
+        <br />
+        <br />
+      <v-dialog v-model="dialogb" persistent max-width="290">
+      <template v-slot:activator="{ on }">
+        <v-btn color="red accent-4" dark v-on="on">Change picture</v-btn>
+      </template>
+      <v-card>
+        <v-card-title class="headline">Are you sure you want to leave?</v-card-title>
+        <v-card-text>
+          You'll lose everything if you didn't save.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red" text @click="dialogb = false">CANCEL</v-btn>
+          <v-btn
+            color="red accent-4"
+            class="mr-4"
+            to="/"
+          >
+          Yes, I confirm
+        </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     </v-col>
     <v-col>
       <form>
@@ -70,6 +94,7 @@
           @blur="setData()"
           outlined
         ></v-text-field>
+
       </form>
 
       <h2>Step 3: Add it to the list</h2>
@@ -82,32 +107,48 @@
           Push
         </v-btn>
       </p>
+              <v-text-field
+          type="number"
+          label="ID"
+          v-model=labelid
+          disabled
+          outlined
+        ></v-text-field>
 
-      <h2>Step 3: Add it to the list</h2>
-      <p>
-        <v-btn
-          color="blue"
-          class="mr-4"
-          @click="setData()"
-        >
-          Set
-        </v-btn>
-      </p>
     </v-col>
     <!-- List -->
     <v-col>
 
-     <h2>Step 5: Download your list</h2>
-      <p>
-        <v-btn
-          color="green"
-          class="mr-4"
-          :href="thefile"
-          download="coordinates.json"
-        >
+     <h2>Step 4: Download your list</h2>
+
+      <v-dialog v-model="dialog" persistent max-width="290">
+      <template v-slot:activator="{ on }">
+        <v-btn color="success" dark v-on="on">Download</v-btn>
+      </template>
+      <v-card>
+        <v-card-title class="headline">Name your file</v-card-title>
+        <v-card-text>
+          <v-text-field
+          label="Filename"
+          v-model=filename
+          outlined
+        ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="dialog = false">CANCEL</v-btn>
+          <v-btn
+            color="green"
+            class="mr-4"
+            :href="thefile"
+            :download="filename"
+            @click="dialog = false"
+          >
           Download
         </v-btn>
-      </p>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
       <v-list>
         <v-list-item-group v-model="model">
@@ -123,11 +164,11 @@
                 color="red darken-2"
               />
             </v-list-item-icon>
-            <v-list-item-content @click="retrieveData(elem.obj)">
+            <v-list-item-content @click="retrieveData(elem)">
               <span>id: {{elem.id}}</span>
-              <h3>label: {{elem.obj.label}}</h3>
-              <span>x: <b>{{elem.obj.top}}</b> y: <b>{{elem.obj.left}}</b></span>
-              <span>width: <b>{{elem.obj.width}}</b> height: <b>{{elem.obj.height}}</b></span>
+              <h3>label: {{elem.label}}</h3>
+              <span>x: <b>{{elem.top}}</b> y: <b>{{elem.left}}</b></span>
+              <span>width: <b>{{elem.width}}</b> height: <b>{{elem.height}}</b></span>
             </v-list-item-content>
           </v-list-item>
         </v-list-item-group>
@@ -146,8 +187,11 @@ export default {
   data () {
     return {
       model: 1,
+      dialog: false,
+      dialogb: false,
       icon: "mdi-delete-forever",
       coordonnees: [],
+      ids: new Set([]),
       imgSrc: "",
       data: null,
       current: {
@@ -156,8 +200,10 @@ export default {
         height: 0,
         width: 0,
       },
+      filename: 'filename.json',
       labelvalue: '',
-      lastId: 0,
+      labelid: 1,
+      lastId: 1,
       style: {
         "max-width": "500px",
         "max-height": "500px"
@@ -174,7 +220,7 @@ export default {
   components: { VueCropper },
   computed: {
     thefile() {
-      console.log(this.coordonnees);
+      // console.log(this.coordonnees);
       return `data:json/octet-stream;charset=utf-8,${JSON.stringify(this.coordonnees, null, 2)}`
     },
   },
@@ -185,20 +231,22 @@ export default {
       // console.log(this.data);
     },
     pushData () {
+
+      if (this.ids.has(this.labelid)) {
+        this.deleteElem(this.labelid);
+      }
+
       this.coordonnees.push({
-        id: this.lastId++,
-        obj: {
-          top: this.current.top,
-          left: this.current.left,
-          width: this.current.width,
-          height: this.current.height,
-          label: this.labelvalue
-        }
+        id: this.labelid,
+        top: this.current.top,
+        left: this.current.left,
+        width: this.current.width,
+        height: this.current.height,
+        label: this.labelvalue
       });
+      this.resetVals();
     },
     setData () {
-      console.log(this.current);
-
       this.$refs.cropper.setCropBoxData({
         top: Number(this.current.top), left: Number(this.current.left), width: Number(this.current.width), height: Number(this.current.height)
       });
@@ -211,10 +259,23 @@ export default {
         width: obj.width,
       };
       this.labelvalue = obj.label;
+      this.labelid = obj.id;
       this.setData();
     },
     deleteElem (id) {
       this.coordonnees = this.coordonnees.filter(obj => obj.id !== id);
+    },
+    resetVals () {
+        this.ids.add(this.labelid);
+        if(this.labelid === this.lastId) {
+          ++this.lastId;
+        }
+        this.labelid = this.lastId;
+        this.current.top = 0;
+        this.current.left = 0;
+        this.current.width = 0;
+        this.current.height = 0;
+        this.labelvalue = "";
     }
   }
 };
